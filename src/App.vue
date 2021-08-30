@@ -4,7 +4,6 @@
       <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
 
       <v-toolbar-title>Deathday</v-toolbar-title>
-
     </v-app-bar>
     <v-navigation-drawer v-model="drawer" absolute bottom temporary>
       <v-list nav dense>
@@ -12,12 +11,8 @@
           v-model="group"
           active-class="deep-purple--text text--accent-4"
         >
-          <v-list-item>
-            <v-list-item-title v-for="nav in navItems" :key="nav.caption" :to="nav.to"
-              >{{
-                nav.caption
-              }}</v-list-item-title
-            >
+          <v-list-item v-for="nav in navItems" :key="nav.caption" :to="nav.to">
+            <v-list-item-title>{{ nav.caption }}</v-list-item-title>
           </v-list-item>
         </v-list-item-group>
       </v-list>
@@ -34,12 +29,9 @@
 <script lang="ts">
 import Vue from "vue";
 import { Component, Watch } from "vue-property-decorator";
-import { vxm } from "./store";
+import { store, UserStore } from "./store";
 @Component({})
 export default class App extends Vue {
-  get vxm() {
-    return vxm;
-  }
   get navItems(): { caption: string; to: string }[] {
     return [
       {
@@ -48,7 +40,11 @@ export default class App extends Vue {
       },
     ];
   }
+  get store(): UserStore {
+    return store;
+  }
   drawer = false;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   group: any = null;
   @Watch("myWatchedProperty")
   onGroup(): void {
