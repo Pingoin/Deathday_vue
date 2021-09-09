@@ -4,12 +4,13 @@ Vue.use(VueRouter)
 
 const routes: Array<RouteConfig> = [
   {
-    path: '/',
+    path: '/user/:id?',
+    alias:'/',
     component: () => import(/* webpackChunkName: "user" */ '../views/User.vue')
   },
   {
-    path: '/:id',
-    component: () => import(/* webpackChunkName: "user" */ '../views/User.vue')
+    path: '/edit/:id?',
+    component: () => import(/* webpackChunkName: "user" */ '../views/EditUser.vue')
   },
 ]
 

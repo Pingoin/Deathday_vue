@@ -14,6 +14,12 @@
           <v-list-item v-for="nav in navItems" :key="nav.caption" :to="nav.to">
             <v-list-item-title>{{ nav.caption }}</v-list-item-title>
           </v-list-item>
+          <v-list-item v-for="user in store.users" :key="user.name" :to="'/user/'+user.name">
+            <v-list-item-title>{{ user.name }}</v-list-item-title>
+          </v-list-item>
+          <v-list-item to="/edit">
+            <v-list-item-title>Nutzer Anlegen</v-list-item-title>
+          </v-list-item>
         </v-list-item-group>
       </v-list>
     </v-navigation-drawer>
@@ -33,13 +39,21 @@ import { store, UserStore } from "./store";
 @Component({})
 export default class App extends Vue {
   get navItems(): { caption: string; to: string }[] {
-    return [
+    let tmp = [
       {
         caption: "Home",
         to: "/",
       },
     ];
+    store.users.forEach((user) => {
+      tmp.push({
+        caption: user.name,
+        to: "/user/" + user.name,
+      });
+    });
+    return tmp;
   }
+
   get store(): UserStore {
     return store;
   }

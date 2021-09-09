@@ -1,53 +1,169 @@
 <template>
-  <v-row class="row items-center justify-evenly">
-    <div>
-      <div class="q-gutter-md row items-start">
-        <v-date-picker v-model="birthDateTime" mask="YYYY-MM-DD" dark :options="dateInPast" />
-        <v-time-picker v-model="birthTime" mask="HH:mm" dark />
-      </div>
-      <select v-model="sex">
-        <option>m</option>
-        <option>f</option>
-      </select>
-    </div>
-    <div>
-      <h2>{{ death.dateOfDeath.toLocaleString() }}</h2>
-      <ul>
-        <li>{{ death.diff.weeks.toString() }} Wochen</li>
-        <li>{{ death.diff.days.toString() }} Tage</li>
-        <li>{{ death.diff.hours.toString() }} Stunden</li>
-        <li>{{ death.diff.minutes.toString() }} Minuten</li>
-        <li>{{ death.diff.seconds.toString() }} Sekunden</li>
-      </ul>
-    </div>
-  </v-row>
+  <v-form v-model="valid">
+    <v-container>
+      <v-row>
+        <v-col cols="auto">
+          <v-text-field
+            v-model="name"
+            :rules="nameRules"
+            :counter="20"
+            label="Name"
+            ref="form"
+            required
+          ></v-text-field>
+        </v-col>
+
+        <v-col class="d-flex" cols="auto">
+          <v-select
+            v-model="sex"
+            :items="['m', 'f']"
+            label="Geschlecht"
+          ></v-select>
+        </v-col>
+        <v-col cols="auto">
+          <v-text-field
+            v-model="birthDate.year"
+            type="number"
+            :max="new Date().getFullYear()"
+            min="1900"
+            label="Geburtsjahr"
+            required
+          ></v-text-field>
+        </v-col>
+        <v-col class="d-flex" cols="auto">
+          <v-select
+            v-model="birthDate.month"
+            :items="months"
+            item-text="text"
+            item-value="val"
+            label="Geburtsmonat"
+          ></v-select>
+        </v-col>
+        <v-col cols="auto">
+          <v-text-field
+            v-model="birthDate.day"
+            type="number"
+            max="31"
+            min="1"
+            label="Geburtstag"
+            required
+            :rules="dayRules"
+          ></v-text-field>
+        </v-col>
+        <v-col cols="auto">
+          <v-text-field
+            v-model="birthDate.hour"
+            type="number"
+            max="24"
+            min="0"
+            label="Geburtsstunde"
+            required
+          ></v-text-field>
+        </v-col>
+        <v-col cols="auto">
+          <v-text-field
+            v-model="birthDate.minutes"
+            type="number"
+            max="59"
+            min="0"
+            label="Geburtsminute"
+            required
+          ></v-text-field>
+        </v-col>
+      </v-row>
+      <v-row>
+        <v-col>
+          <v-btn
+            :disabled="!valid"
+            color="success"
+            class="mr-4"
+            @click="validate"
+          >
+            Eintragen
+          </v-btn>
+        </v-col>
+      </v-row>
+    </v-container>
+  </v-form>
 </template>
 
 <script lang="ts">
+import { User } from "@/classes/User";
 import { Vue, Component } from "vue-property-decorator";
-import lifeTable, { DateOfDeath } from "../classes/lifeTable";
+import { store } from "../store";
 
 @Component({
   components: {},
 })
 export default class EditUser extends Vue {
-  death: DateOfDeath = lifeTable.getDeathDate(new Date(), "m");
+  valid = false;
+  name = "";
   sex: "m" | "f" = "m";
-  birthDate = new Date();
-  birthDateTime = "1990-03-07";
-  birthTime = "21:00";
-  mounted():void {
-    setInterval(this.refresh.bind(this), 500);
-    this.refresh();
-  }
+  birthDate = {
+    year: new Date().getFullYear(),
+    month: new Date().getMonth(),
+    day: new Date().getDate(),
+    hour: new Date().getHours(),
+    minutes: new Date().getMinutes(),
+  };
+  months = [
+    { val: 0, text: "Januar" },
+    { val: 1, text: "Februar" },
+    { val: 2, text: "März" },
 
-  dateInPast(date: string):boolean {
-    return Date.parse(date) < new Date().valueOf();
-  }
+    { val: 3, text: "April" },
+    { val: 4, text: "Mai" },
+    { val: 5, text: "Juni" },
 
-  private refresh() {
-    this.birthDate = new Date(Date.parse(this.birthDateTime + " " + this.birthTime));
-    this.death = lifeTable.getDeathDate(this.birthDate, this.sex);
+    { val: 6, text: "Juli" },
+    { val: 7, text: "August" },
+    { val: 8, text: "September" },
+
+    { val: 9, text: "Oktober" },
+    { val: 10, text: "November" },
+    { val: 11, text: "Dezember" },
+  ];
+  nameRules = [
+    (v: string): true | string => !!v || "Name is required",
+    (v: string): true | string =>
+      v.length <= 20 || "Name must be less than 20 characters",
+    (v: string): true | string => !store.users.map(x=>x.name).includes(v) || "Name schon vorhanden",
+  ];
+  dayRules = [
+    (v: number): true | string => {
+      if ([0, 2, 4, 6, 7, 9, 11].includes(this.birthDate.month)) {
+        return v <= 31 ? true : "zu viele Tage";
+      } else if (this.birthDate.month == 1) {
+        if (
+          this.birthDate.year % 400 == 0 ||
+          (this.birthDate.year % 4 == 0 && this.birthDate.year % 100 > 0)
+        )
+          return v <= 29 ? true : "zu viele Tage";
+        else return v <= 28 ? true : "zu viele Tage";
+      } else {
+        return v <= 30 ? true : "zu viele Tage";
+      }
+    },
+  ];
+  get user(): User {
+    let tmpDate = new Date();
+    tmpDate.setFullYear(
+      this.birthDate.year,
+      this.birthDate.month,
+      this.birthDate.day
+    );
+    tmpDate.setHours(this.birthDate.hour, this.birthDate.minutes, 0, 0);
+    return {
+      name: this.name,
+      sex: this.sex,
+      birthDate: tmpDate.valueOf(),
+    };
+  }
+  selectedUser:User|undefined;
+
+  validate():void{
+    if(this.valid)
+    store.addUser(this.user);
   }
 }
 </script>

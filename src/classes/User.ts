@@ -1,5 +1,5 @@
 export interface User {
     name: string;
-    birthDate: Date;
+    birthDate: number;
     sex: "m" | "f";
 }
