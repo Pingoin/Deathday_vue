@@ -75,6 +75,9 @@ export class UserStore {
     return user ? user : exampleUser;
   }
 
+  removeUser(user:User):void{
+    this.dbUsers?.remove(user);
+  }
 }
 
 
