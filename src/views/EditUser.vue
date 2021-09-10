@@ -82,6 +82,16 @@
             {{isEdit?"Ändern":"Eintragen"}}
           </v-btn>
         </v-col>
+                <v-col>
+          <v-btn
+            v-if="this.isEdit"
+            color="error"
+            class="mr-4"
+            @click="deleteUser"
+          >
+            {{isEdit?"Ändern":"Eintragen"}}
+          </v-btn>
+        </v-col>
       </v-row>
     </v-container>
   </v-form>
@@ -231,6 +241,9 @@ export default class EditUser extends Vue {
       this.$router.push({ path: '/user/'+this.user.name })
     }
 
+  }
+  deleteUser():void{
+    store.removeUser(this.user)
   }
 }
 </script>
